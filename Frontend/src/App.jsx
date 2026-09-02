@@ -1,11 +1,20 @@
+import { useState } from "react";
 import Login from "./Login";
+import Funcionarios from "./Funcionarios";
 
 function App() {
+  const [usuario, setUsuario] = useState(null);
+
   function handleLoginSuccess(user) {
-    alert("Login realizado com sucesso! Bem-vindo(a), " + user.email);
+    setUsuario(user);
   }
 
-  return <Login onLoginSuccess={handleLoginSuccess} />;
+  if (!usuario) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  return <Funcionarios />;
 }
 
 export default App;
+
