@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cadastro de Funcionários - CIMDP</title>
+
+    <link rel="stylesheet" href="CadastroFuncionario.css">
+</head>
+
+<body>
+
+    <main class="pagina-cadastro">
+
+        <h2 class="nome-projeto">CIMDP</h2>
+
+        <div class="conteudo-cadastro">
+
+            <section class="cartao-cadastro">
+
+                <h1>Cadastro de Funcionário</h1>
+
+                <p>
+                    Preencha os dados para cadastrar um novo funcionário.
+                </p>
+
+                <form id="form-funcionario" novalidate>
+
+                    <!-- NOME -->
+                    <div class="campo-formulario">
+
+                        <label for="nome">
+                            Nome completo
+                        </label>
+
+                        <input
+                            type="text"
+                            id="nome"
+                            name="nome"
+                            placeholder="Digite o nome completo"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- E-MAIL -->
+                    <div class="campo-formulario">
+
+                        <label for="email">
+                            E-mail
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="funcionario@empresa.com"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- CARGO -->
+                    <div class="campo-formulario">
+
+                        <label for="cargo">
+                            Cargo
+                        </label>
+
+                        <select
+                            id="cargo"
+                            name="cargo"
+                            required
+                        >
+
+                            <option value="">
+                                Selecione o cargo
+                            </option>
+
+                            <option value="administrador">
+                                Administrador
+                            </option>
+
+                            <option value="gerente">
+                                Gerente
+                            </option>
+
+                            <option value="atendente">
+                                Atendente
+                            </option>
+
+                            <option value="funcionario">
+                                Funcionário
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- SENHA -->
+                    <div class="campo-formulario">
+
+                        <label for="senha">
+                            Senha
+                        </label>
+
+                        <input
+                            type="password"
+                            id="senha"
+                            name="senha"
+                            placeholder="Digite uma senha"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- CONFIRMAR SENHA -->
+                    <div class="campo-formulario">
+
+                        <label for="confirmar-senha">
+                            Confirmar senha
+                        </label>
+
+                        <input
+                            type="password"
+                            id="confirmar-senha"
+                            name="confirmar-senha"
+                            placeholder="Digite a senha novamente"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- BOTÃO -->
+                    <button type="submit">
+                        Cadastrar Funcionário
+                    </button>
+
+
+                    <!-- MENSAGEM -->
+                    <p id="mensagem-cadastro"></p>
+
+                </form>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <script src="CadastroFuncionario.js"></script>
+
+</body>
+
+</html>

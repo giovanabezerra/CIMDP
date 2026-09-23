@@ -1,0 +1,257 @@
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    font-family: Arial, sans-serif;
+
+    background-color: #f1f5f9;
+}
+
+
+/* PÁGINA */
+
+.pagina-cadastro {
+    position: relative;
+
+    min-height: 100vh;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    padding: 100px 24px 40px;
+}
+
+
+/* LOGO CIMDP */
+
+.nome-projeto {
+    position: absolute;
+
+    top: 35px;
+    left: 0;
+
+    width: 100%;
+
+    margin: 0;
+
+    color: #16a34a;
+
+    text-align: center;
+
+    font-size: 36px;
+
+    font-weight: 700;
+
+    letter-spacing: 2px;
+}
+
+
+/* CONTEÚDO */
+
+.conteudo-cadastro {
+    width: 100%;
+
+    max-width: 550px;
+}
+
+
+/* CARTÃO */
+
+.cartao-cadastro {
+    width: 100%;
+
+    padding: 40px;
+
+    background-color: #ffffff;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 12px 30px
+        rgba(12, 23, 42, 0.12);
+}
+
+
+/* TÍTULO */
+
+.cartao-cadastro h1 {
+    margin-top: 0;
+
+    margin-bottom: 8px;
+
+    color: #0f172a;
+
+    font-size: 28px;
+}
+
+
+/* TEXTO */
+
+.cartao-cadastro > p {
+    margin-top: 0;
+
+    margin-bottom: 24px;
+
+    color: #64748b;
+}
+
+
+/* CAMPOS */
+
+.campo-formulario {
+    margin-bottom: 18px;
+}
+
+
+/* LABEL */
+
+.campo-formulario label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #334155;
+
+    font-weight: 600;
+}
+
+
+/* INPUT E SELECT */
+
+.campo-formulario input,
+.campo-formulario select {
+
+    width: 100%;
+
+    padding: 12px;
+
+    border: 1px solid #cbd5e1;
+
+    border-radius: 8px;
+
+    background-color: #ffffff;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 16px;
+}
+
+
+/* FOCO */
+
+.campo-formulario input:focus,
+.campo-formulario select:focus {
+
+    outline: none;
+
+    border-color: #16a34a;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(22, 163, 74, 0.15);
+}
+
+
+/* BOTÃO */
+
+button {
+
+    width: 100%;
+
+    padding: 12px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background-color: #16a34a;
+
+    color: #ffffff;
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s;
+}
+
+
+/* HOVER */
+
+button:hover {
+
+    background-color: #15803d;
+}
+
+
+/* FOCO DO BOTÃO */
+
+button:focus {
+
+    outline: none;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(22, 163, 74, 0.25);
+}
+
+
+/* MENSAGEM */
+
+#mensagem-cadastro {
+
+    margin: 16px 0 0;
+
+    text-align: center;
+
+    font-weight: 600;
+}
+
+
+/* MENSAGEM DE ERRO */
+
+#mensagem-cadastro.erro {
+
+    color: #dc2626;
+}
+
+
+/* MENSAGEM DE SUCESSO */
+
+#mensagem-cadastro.sucesso {
+
+    color: #16a34a;
+}
+
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 600px) {
+
+    .cartao-cadastro {
+
+        padding: 25px;
+    }
+
+
+    .cartao-cadastro h1 {
+
+        font-size: 24px;
+    }
+
+
+    .nome-projeto {
+
+        font-size: 30px;
+    }
+
+}
