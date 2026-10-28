@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIMDP - Calculadora Inteligente de Manejo e Dosagem Preditiva</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="menu.css">
+
+    <!-- Biblioteca do Supabase (via link, sem precisar de npm) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <h1>CIMDP</h1>
+            <p>Calculadora Inteligente de Manejo e Dosagem Preditiva</p>
+            <a href="admin.html" style="color:#fff; text-decoration:underline; font-size:0.85rem; margin-top:10px; display:inline-block;">Acessar Painel Administrativo →</a>
+        </header>
+
+        <!-- Seção 1: o que calcular -->
+        <section class="card">
+            <h2>1. O que você quer calcular?</h2>
+
+            <!-- Passe o mouse numa categoria para ver as opções -->
+            <nav class="menu-categorias" id="menu-categorias">
+                <ul class="lista-categorias" id="lista-categorias">
+                    <li class="menu-vazio">Carregando opções...</li>
+                </ul>
+            </nav>
+            <p id="selecao-atual" class="selecao-atual"></p>
+
+            <!-- Aparece depois de escolher a espécie -->
+            <div id="bloco-produto" style="display:none;">
+                <label for="produto">Produto:</label>
+                <select id="produto"></select>
+            </div>
+
+            <!-- Os campos (peso, fase, atividade...) são montados conforme o produto -->
+            <div id="campos-dinamicos"></div>
+
+            <button type="button" id="btn-calcular" style="display:none;">Calcular Dosagem</button>
+            <div id="erro-calculo"></div>
+        </section>
+
+        <!-- Seção 2: resultado -->
+        <section class="card" id="secao-resultado">
+            <h2>2. Dosagem e Estimativa de Duração</h2>
+            <div id="resultado-dosagem" class="alerta-dosagem">
+                Escolha o que calcular acima e clique em "Calcular Dosagem".
+            </div>
+        </section>
+
+        <!-- Seção 3: confirmação de compra (só aparece depois de calcular) -->
+        <section class="card" id="secao-confirmacao" style="display:none;">
+            <h2>3. Vai levar o produto? Receba um lembrete</h2>
+            <p style="font-size:0.9rem; color:#555;">Só peça o lembrete se for mesmo levar o produto — assim avisamos na hora certa.</p>
+            <form id="form-pedido">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" required placeholder="Digite seu nome">
+
+                <label for="whatsapp">Telefone / WhatsApp (com DDD):</label>
+                <input type="tel" id="whatsapp" required inputmode="numeric" maxlength="15" autocomplete="tel" placeholder="(61) 90000-0000">
+
+                <div class="lgpd-box">
+                    <input type="checkbox" id="lgpd" required>
+                    <label for="lgpd" class="label-inline">
+                        Autorizo a coleta dos dados acima para recebimento de lembrete automático de reposição do produto via WhatsApp (LGPD).
+                    </label>
+                </div>
+
+                <button type="submit" id="btn-confirmar">Confirmar compra e receber lembrete</button>
+            </form>
+            <div id="retorno-confirmacao"></div>
+        </section>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="menu.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

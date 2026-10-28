@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIMDP - Painel Administrativo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="menu.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+</head>
+<body>
+    <div class="container container-admin">
+        <header class="header">
+            <h1>CIMDP</h1>
+            <p>Painel Administrativo</p>
+        </header>
+
+        <!-- Login: o painel só aparece depois de entrar -->
+        <section class="card" id="bloco-login">
+            <h2>Entrar</h2>
+            <form id="form-login">
+                <label for="login-email">E-mail administrativo:</label>
+                <input type="email" id="login-email" required placeholder="voce@empresa.com">
+                <label for="login-senha">Senha:</label>
+                <input type="password" id="login-senha" required placeholder="Digite sua senha">
+                <button type="submit" id="btn-entrar">Entrar</button>
+            </form>
+            <div id="erro-login"></div>
+            <p style="margin-top:14px;"><a class="btn-link" href="index.html">← Voltar à calculadora</a></p>
+        </section>
+
+        <div id="bloco-painel" style="display:none;">
+            <div class="nav-admin">
+                <a class="btn-link" href="index.html">← Voltar à calculadora</a>
+                <button type="button" class="btn-secundario" id="btn-sair">Sair</button>
+            </div>
+
+            <section class="card">
+                <h2>Resumo de uso</h2>
+                <div class="grid-metrica">
+                    <div class="card-metrica"><h3>Cálculos realizados</h3><span id="metric-total">-</span></div>
+                    <div class="card-metrica"><h3>Compras confirmadas</h3><span id="metric-confirmados">-</span></div>
+                    <div class="card-metrica"><h3>Produto mais consultado</h3><span id="metric-top" style="font-size:1rem;">-</span></div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2 id="titulo-form">Cadastrar produto</h2>
+                <form id="form-produto">
+                    <input type="hidden" id="produto-id">
+                    <label for="nome-produto">Nome do produto:</label>
+                    <input type="text" id="nome-produto" required placeholder="Ex: Ração Golden Cães Adulto 15kg">
+
+                    <div class="grid-2col">
+                        <div>
+                            <label for="tipo-produto">Tipo:</label>
+                            <select id="tipo-produto" required>
+                                <option value="racao">Ração</option>
+                                <option value="medicamento">Medicamento</option>
+                                <option value="adubo">Adubo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="especie-produto">Espécie:</label>
+                            <select id="especie-produto" required></select>
+                            <div id="bloco-nova-especie" style="display:none;">
+                                <label for="nova-especie">Nome da nova espécie:</label>
+                                <input type="text" id="nova-especie" placeholder="Ex: Cavalo">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid-2col">
+                        <div>
+                            <label for="embalagem-produto">Tamanho da embalagem (kg):</label>
+                            <input type="number" id="embalagem-produto" min="0" step="any" placeholder="Ex: 15 (opcional)">
+                        </div>
+                        <div>
+                            <label for="regra-produto">Regra genérica (fórmula):</label>
+                            <select id="regra-produto"><option value="">Nenhuma</option></select>
+                        </div>
+                    </div>
+                    <p style="font-size:.8rem;color:#666;margin-top:8px;">
+                        Produtos com tabela do fabricante (regra_produto) usam a tabela primeiro; a regra genérica é a alternativa quando não há tabela.
+                    </p>
+
+                    <button type="submit" id="btn-salvar">Cadastrar Produto</button>
+                    <button type="button" class="btn-secundario" id="btn-cancelar" style="display:none;width:100%;margin-top:10px;">Cancelar edição</button>
+                </form>
+                <div id="retorno-produto"></div>
+            </section>
+
+            <section class="card">
+                <h2>Produtos</h2>
+                <div class="tabela-wrapper">
+                    <table class="tabela-admin">
+                        <thead>
+                            <tr><th>Produto</th><th>Tipo</th><th>Espécie</th><th>Embalagem</th><th>Regra</th><th>Status</th><th>Ações</th></tr>
+                        </thead>
+                        <tbody id="tabela-corpo"></tbody>
+                    </table>
+                </div>
+                <button type="button" class="btn-secundario" id="btn-csv" style="margin-top:14px;">Exportar CSV</button>
+            </section>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

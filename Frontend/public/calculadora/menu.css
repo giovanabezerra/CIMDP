@@ -1,0 +1,37 @@
+/* ===== Menu em cascata (passa o mouse na categoria -> aparecem as espécies) ===== */
+.menu-categorias { background:#fff; border:1px solid #dcdfe6; border-radius:12px; padding:8px; margin-bottom:16px; }
+.lista-categorias { list-style:none; display:flex; gap:6px; margin:0; padding:0; }
+.item-categoria { position:relative; flex:1; }
+.nome-categoria { display:block; padding:12px 10px; text-align:center; border-radius:8px; font-weight:600; color:#1b5e20; cursor:pointer; transition:background-color .15s ease; }
+.item-categoria:hover .nome-categoria { background:#e8f5e9; }
+
+.submenu-especies { display:none; position:absolute; top:calc(100% + 6px); left:0; min-width:200px; background:#fff; border:1px solid #dcdfe6; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,.12); list-style:none; margin:0; padding:6px; z-index:20; }
+.item-categoria:hover .submenu-especies,
+.item-categoria:focus-within .submenu-especies { display:block; }
+/* Ponte invisível: o mouse passa da categoria para o submenu sem perder o hover */
+.submenu-especies::before { content:""; position:absolute; top:-10px; left:0; right:0; height:10px; }
+.submenu-especies li { padding:10px 12px; border-radius:6px; cursor:pointer; font-size:.95rem; color:#333; }
+.submenu-especies li:hover { background:#e8f5e9; color:#1b5e20; }
+.submenu-especies li.selecionado { background:#1b5e20; color:#fff; }
+
+.selecao-atual { text-align:center; font-weight:600; color:#1b5e20; min-height:1.2em; margin-bottom:10px; }
+
+/* Celular: não existe "hover" — o toque abre o submenu */
+@media (max-width:600px) {
+  .lista-categorias { flex-direction:column; }
+  .submenu-especies { position:static; box-shadow:none; display:none; }
+  .item-categoria:hover .submenu-especies { display:none; }
+  .item-categoria.aberto .submenu-especies { display:block; }
+}
+
+/* ===== Resultado e avisos ===== */
+.mensagem-erro { margin-top:12px; padding:12px; background:#fdecea; border-left:5px solid #d32f2f; border-radius:6px; color:#b71c1c; font-size:.9rem; line-height:1.4; }
+.mensagem-sucesso { margin-top:12px; padding:12px; background:#e8f5e9; border-left:5px solid #2e7d32; border-radius:6px; color:#1b5e20; font-size:.9rem; }
+.resultado-dose { font-size:1.5rem; font-weight:700; color:#1b5e20; margin:4px 0; }
+.resultado-detalhe { font-size:.9rem; color:#555; margin-top:6px; line-height:1.4; }
+.lista-avisos { margin:10px 0 0 18px; color:#8a5a00; font-size:.9rem; }
+.linha-unidade { display:flex; gap:8px; }
+.linha-unidade input { flex:1; }
+.linha-unidade select { width:90px; }
+
+.menu-vazio { width:100%; text-align:center; padding:12px; color:#666; font-size:.9rem; }
