@@ -101,9 +101,23 @@ const Api = (() => {
   }
 
   // Back-end:  POST /confirmar-compra   (telefone só com dígitos)
+  // Cliente já cadastrado: pode passar nome = null (o back-end usa o nome guardado).
   async function confirmarCompra(idCalculo, nome, telefoneSoDigitos) {
-    await chamarBackend("POST", "/confirmar-compra", {
-      id_calculo: idCalculo, nome, telefone: telefoneSoDigitos,
+    const corpo = { id_calculo: idCalculo, telefone: telefoneSoDigitos };
+    if (nome) corpo.nome = nome;
+    await chamarBackend("POST", "/confirmar-compra", corpo);
+  }
+
+  // Back-end:  POST /clientes/identificar  ->  { encontrado, recorrente }
+  // Só diz SE o telefone já está cadastrado (o nome nunca volta, por privacidade).
+  async function identificarCliente(telefoneSoDigitos) {
+    return chamarBackend("POST", "/clientes/identificar", { telefone: telefoneSoDigitos });
+  }
+
+  // Back-end:  POST /clientes   (cadastra/atualiza cliente recorrente; exige consentimento LGPD)
+  async function cadastrarClienteRecorrente(nome, telefoneSoDigitos) {
+    await chamarBackend("POST", "/clientes", {
+      nome, telefone: telefoneSoDigitos, consentimento: true,
     });
   }
 
@@ -124,13 +138,40 @@ const Api = (() => {
   async function listarProdutosAdmin() {
     const { data: produtos, error } = await db.from("produto").select("*").order("nome");
     if (error) throw new Error("Não foi possível carregar os produtos.");
-    const { data: regras } = await db.from("regra_produto").select("id_produto");
-    const comTabela = new Set((regras || []).map((r) => r.id_produto));
-    return produtos.map((p) => ({ ...p, temTabela: comTabela.has(p.id_produto) }));
+    // status de cada linha de regra (precisa do SQL schema_regras_bd.sql; sem ele, só id_produto)
+    let { data: regras, error: erroStatus } = await db.from("regra_produto").select("id_produto, status");
+    if (erroStatus) ({ data: regras } = await db.from("regra_produto").select("id_produto"));
+    const porProduto = {};
+    (regras || []).forEach((r) => {
+      (porProduto[r.id_produto] = porProduto[r.id_produto] || []).push(r.status || "ATIVA");
+    });
+    return produtos.map((p) => {
+      const lista = porProduto[p.id_produto] || [];
+      // status único se todas as linhas têm o mesmo; "MISTO" se há mais de um
+      const unicos = [...new Set(lista)];
+      return {
+        ...p,
+        temTabela: lista.length > 0,
+        statusTabela: unicos.length === 0 ? null : unicos.length === 1 ? unicos[0] : "MISTO",
+      };
+    });
+  }
+
+  // Troca o status de TODAS as linhas da tabela do fabricante de um produto.
+  // Só VALIDADA e ATIVA entram no cálculo.
+  async function definirStatusTabelaProduto(idProduto, status) {
+    const { error } = await db.from("regra_produto").update({ status }).eq("id_produto", idProduto);
+    if (error) throw new Error("Não foi possível alterar o status da regra.");
+  }
+
+  async function definirStatusRegraGenerica(idRegra, status) {
+    const { error } = await db.from("regra_generica").update({ status }).eq("id_regra", idRegra);
+    if (error) throw new Error("Não foi possível alterar o status da regra.");
   }
 
   async function listarRegrasGenericas() {
-    const { data, error } = await db.from("regra_generica").select("id_regra, especie, tipo").order("especie");
+    let { data, error } = await db.from("regra_generica").select("id_regra, especie, tipo, status").order("especie");
+    if (error) ({ data, error } = await db.from("regra_generica").select("id_regra, especie, tipo").order("especie"));
     if (error) throw new Error("Não foi possível carregar as regras genéricas.");
     return data;
   }
@@ -154,6 +195,8 @@ const Api = (() => {
     const campos = {
       nome: p.nome, tipo: p.tipo, especie: p.especie,
       peso_embalagem: p.peso_embalagem, id_regra: p.id_regra,
+      codigo: p.codigo, marca: p.marca, linha: p.linha,
+      variante: p.variante, unidade_embalagem: p.unidade_embalagem,
     };
     const consulta = p.id_produto
       ? db.from("produto").update(campos).eq("id_produto", p.id_produto)
@@ -188,9 +231,11 @@ const Api = (() => {
 
   return {
     listarMenu, listarProdutos, obterFormulario, calcular, confirmarCompra,
+    identificarCliente, cadastrarClienteRecorrente,
     listarEspecies, salvarEspecie,
     entrar, sair, sessaoAtual, listarProdutosAdmin, listarRegrasGenericas,
     salvarProduto, definirAtivoProduto, resumo,
+    definirStatusTabelaProduto, definirStatusRegraGenerica,
   };
 })();
 

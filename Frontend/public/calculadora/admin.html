@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>CIMDP - Painel Administrativo</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="menu.css">
@@ -73,15 +74,43 @@
 
                     <div class="grid-2col">
                         <div>
-                            <label for="embalagem-produto">Tamanho da embalagem (kg):</label>
-                            <input type="number" id="embalagem-produto" min="0" step="any" placeholder="Ex: 15 (opcional)">
+                            <label for="codigo-produto">Código do catálogo:</label>
+                            <input type="text" id="codigo-produto" inputmode="numeric" placeholder="Ex: 000252 (zeros à esquerda contam)">
+                        </div>
+                        <div>
+                            <label for="marca-produto">Marca:</label>
+                            <input type="text" id="marca-produto" placeholder="Ex: Golden">
+                        </div>
+                    </div>
+
+                    <div class="grid-2col">
+                        <div>
+                            <label for="linha-produto">Linha:</label>
+                            <input type="text" id="linha-produto" placeholder="Ex: Mini Bits">
+                        </div>
+                        <div>
+                            <label for="variante-produto">Variante / sabor:</label>
+                            <input type="text" id="variante-produto" placeholder="Ex: Carne">
+                        </div>
+                    </div>
+
+                    <div class="grid-2col">
+                        <div>
+                            <label for="embalagem-produto">Tamanho da embalagem:</label>
+                            <div class="linha-unidade">
+                                <input type="number" id="embalagem-produto" min="0" step="any" placeholder="Ex: 15 (opcional)">
+                                <select id="unidade-embalagem">
+                                    <option value="kg">kg</option><option value="g">g</option>
+                                    <option value="L">L</option><option value="ml">ml</option><option value="un">un</option>
+                                </select>
+                            </div>
                         </div>
                         <div>
                             <label for="regra-produto">Regra genérica (fórmula):</label>
                             <select id="regra-produto"><option value="">Nenhuma</option></select>
                         </div>
                     </div>
-                    <p style="font-size:.8rem;color:#666;margin-top:8px;">
+                    <p style="font-size:.8rem;margin-top:8px;">
                         Produtos com tabela do fabricante (regra_produto) usam a tabela primeiro; a regra genérica é a alternativa quando não há tabela.
                     </p>
 
@@ -96,12 +125,23 @@
                 <div class="tabela-wrapper">
                     <table class="tabela-admin">
                         <thead>
-                            <tr><th>Produto</th><th>Tipo</th><th>Espécie</th><th>Embalagem</th><th>Regra</th><th>Status</th><th>Ações</th></tr>
+                            <tr><th>Código</th><th>Produto</th><th>Tipo</th><th>Espécie</th><th>Embalagem</th><th>Regra</th><th>Validação da tabela</th><th>Status</th><th>Ações</th></tr>
                         </thead>
                         <tbody id="tabela-corpo"></tbody>
                     </table>
                 </div>
                 <button type="button" class="btn-secundario" id="btn-csv" style="margin-top:14px;">Exportar CSV</button>
+            </section>
+
+            <section class="card">
+                <h2>Regras genéricas (fórmulas) e validação</h2>
+                <p class="texto-apoio">Só regras <strong>Validada</strong> ou <strong>Ativa</strong> entram no cálculo. Regras pendentes, em rascunho ou inativas ficam de fora.</p>
+                <div class="tabela-wrapper">
+                    <table class="tabela-admin">
+                        <thead><tr><th>Espécie</th><th>Tipo</th><th>Status da regra</th></tr></thead>
+                        <tbody id="tabela-regras"></tbody>
+                    </table>
+                </div>
             </section>
         </div>
     </div>

@@ -9,6 +9,14 @@ let produtos = [];
 let regrasGenericas = [];
 let especies = [];
 
+const STATUS_REGRA = {
+  RASCUNHO: "Rascunho", PENDENTE_VALIDACAO: "Pendente de validação",
+  VALIDADA: "Validada", ATIVA: "Ativa", INATIVA: "Inativa",
+};
+const status_usa_no_calculo = (s) => s === "VALIDADA" || s === "ATIVA";
+const opcoesStatus = (atual) =>
+  Object.entries(STATUS_REGRA).map(([v, t]) => `<option value="${v}" ${v === atual ? "selected" : ""}>${t}</option>`).join("");
+
 function esc(t) {
   return String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
@@ -38,6 +46,7 @@ async function mostrarPainel() {
       regrasGenericas.map((r) => `<option value="${r.id_regra}">${esc(r.especie)} / ${esc(r.tipo)}</option>`).join("");
     await carregarEspecies();
     await Promise.all([carregarProdutos(), carregarResumo()]);
+    renderizarRegrasGenericas();
   } catch (e) {
     aviso("retorno-produto", e.message, "erro");
   }
@@ -115,13 +124,20 @@ async function carregarProdutos() {
 
   produtos.forEach((p) => {
     const regra = p.temTabela ? "Tabela do fabricante" : p.id_regra ? "Fórmula genérica" : "Sem regra";
+    const validacao = p.temTabela
+      ? (p.statusTabela === "MISTO"
+          ? `<select data-validacao="${p.id_produto}"><option value="">Misto — escolha para padronizar</option>${opcoesStatus("")}</select>`
+          : `<select data-validacao="${p.id_produto}">${opcoesStatus(p.statusTabela)}</select>`)
+      : "-";
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td><strong>${esc(p.nome)}</strong></td>
+      <td>${esc(p.codigo || "-")}</td>
+      <td><strong>${esc(p.nome)}</strong>${p.marca || p.linha || p.variante ? `<br><small>${esc([p.marca, p.linha, p.variante].filter(Boolean).join(" · "))}</small>` : ""}</td>
       <td>${esc(p.tipo)}</td>
       <td>${esc(nomeEspecie(p.especie))}</td>
-      <td>${p.peso_embalagem ? esc(p.peso_embalagem) + " kg" : "-"}</td>
+      <td>${p.peso_embalagem ? esc(p.peso_embalagem) + " " + esc(p.unidade_embalagem || "kg") : "-"}</td>
       <td>${regra}</td>
+      <td>${validacao}</td>
       <td>${p.ativo ? "Ativo" : "Inativo"}</td>
       <td>
         <button class="btn-acao btn-editar" data-acao="editar" data-id="${p.id_produto}">Editar</button>
@@ -131,6 +147,18 @@ async function carregarProdutos() {
   });
 }
 
+function renderizarRegrasGenericas() {
+  const corpo = $("tabela-regras");
+  corpo.innerHTML = regrasGenericas.map((r) => `
+    <tr>
+      <td>${esc(nomeEspecie(r.especie))}</td>
+      <td>${esc(r.tipo)}</td>
+      <td>${r.status === undefined
+        ? "Rode o SQL schema_regras_bd.sql para controlar o status"
+        : `<select data-regra-generica="${r.id_regra}">${opcoesStatus(r.status)}</select>`}</td>
+    </tr>`).join("");
+}
+
 function preencherFormulario(p) {
   $("produto-id").value = p.id_produto;
   $("nome-produto").value = p.nome;
@@ -138,6 +166,11 @@ function preencherFormulario(p) {
   renderizarEspecies(p.especie || "");
   alternarNovaEspecie();
   $("embalagem-produto").value = p.peso_embalagem ?? "";
+  $("unidade-embalagem").value = p.unidade_embalagem || "kg";
+  $("codigo-produto").value = p.codigo ?? "";
+  $("marca-produto").value = p.marca ?? "";
+  $("linha-produto").value = p.linha ?? "";
+  $("variante-produto").value = p.variante ?? "";
   $("regra-produto").value = p.id_regra ?? "";
   $("titulo-form").textContent = "Editar produto";
   $("btn-salvar").textContent = "Atualizar Produto";
@@ -184,6 +217,12 @@ async function salvar(evento) {
     especie,
     peso_embalagem: emb === "" ? null : Number(emb),
     id_regra: regra === "" ? null : Number(regra),
+    // código é TEXTO (preserva zeros à esquerda); vazio vira nulo para não colidir no índice único
+    codigo: $("codigo-produto").value.trim() || null,
+    marca: $("marca-produto").value.trim() || null,
+    linha: $("linha-produto").value.trim() || null,
+    variante: $("variante-produto").value.trim() || null,
+    unidade_embalagem: $("unidade-embalagem").value || "kg",
   };
 
   try {
@@ -217,12 +256,40 @@ async function aoClicarTabela(evento) {
   }
 }
 
+// Troca de status (tabela do fabricante de um produto ou regra genérica)
+async function aoMudarStatus(evento) {
+  const sel = evento.target;
+  try {
+    if (sel.dataset.validacao) {
+      if (!sel.value) return;
+      const p = produtos.find((x) => x.id_produto === Number(sel.dataset.validacao));
+      const nome = STATUS_REGRA[sel.value];
+      if (!confirm(`Marcar TODAS as faixas da tabela de "${p.nome}" como "${nome}"?` +
+          (status_usa_no_calculo(sel.value) ? "\nElas passam a valer no cálculo — confira antes na embalagem." : "\nElas deixam de valer no cálculo."))) {
+        await carregarProdutos(); return;
+      }
+      await Api.definirStatusTabelaProduto(p.id_produto, sel.value);
+      await carregarProdutos();
+      aviso("retorno-produto", `Tabela de "${p.nome}" marcada como ${nome}.`, "sucesso");
+    } else if (sel.dataset.regraGenerica) {
+      const r = regrasGenericas.find((x) => x.id_regra === Number(sel.dataset.regraGenerica));
+      if (!confirm(`Marcar a regra ${r.especie} / ${r.tipo} como "${STATUS_REGRA[sel.value]}"?`)) { renderizarRegrasGenericas(); return; }
+      await Api.definirStatusRegraGenerica(r.id_regra, sel.value);
+      r.status = sel.value;
+      aviso("retorno-produto", "Status da regra atualizado.", "sucesso");
+    }
+  } catch (e) {
+    aviso("retorno-produto", e.message, "erro");
+  }
+}
+
 // ---------- Exportar CSV ----------
 function exportarCSV() {
-  let csv = "ID;Nome;Tipo;Especie;EmbalagemKg;Regra;Status\n";
+  let csv = "ID;Codigo;Nome;Marca;Linha;Variante;Tipo;Especie;Embalagem;Unidade;Regra;StatusRegra;Status\n";
   produtos.forEach((p) => {
     const regra = p.temTabela ? "tabela" : p.id_regra ? "formula" : "sem regra";
-    csv += `${p.id_produto};"${String(p.nome).replace(/"/g, '""')}";${p.tipo};${p.especie};${p.peso_embalagem ?? ""};${regra};${p.ativo ? "ativo" : "inativo"}\n`;
+    const t = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    csv += `${p.id_produto};${t(p.codigo)};${t(p.nome)};${t(p.marca)};${t(p.linha)};${t(p.variante)};${p.tipo};${p.especie};${p.peso_embalagem ?? ""};${p.unidade_embalagem ?? ""};${regra};${p.statusTabela ?? ""};${p.ativo ? "ativo" : "inativo"}\n`;
   });
   const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
   const a = document.createElement("a");
@@ -237,6 +304,8 @@ document.addEventListener("DOMContentLoaded", () => {
   $("form-produto").addEventListener("submit", salvar);
   $("btn-cancelar").addEventListener("click", limparFormulario);
   $("tabela-corpo").addEventListener("click", aoClicarTabela);
+  $("tabela-corpo").addEventListener("change", aoMudarStatus);
+  $("tabela-regras").addEventListener("change", aoMudarStatus);
   $("btn-csv").addEventListener("click", exportarCSV);
   $("especie-produto").addEventListener("change", alternarNovaEspecie);
   iniciar();
