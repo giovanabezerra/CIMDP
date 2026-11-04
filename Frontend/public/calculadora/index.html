@@ -17,11 +17,10 @@
         <header class="header">
             <h1>CIMDP</h1>
             <p>Calculadora Inteligente de Manejo e Dosagem Preditiva</p>
-            <a href="admin.html" style="color:#fff; text-decoration:underline; font-size:0.85rem; margin-top:10px; display:inline-block;">Acessar Painel Administrativo →</a>
         </header>
 
         <!-- Seção 1: o que calcular -->
-        <section class="card">
+        <section class="card" id="secao-calculo">
             <h2>1. O que você quer calcular?</h2>
 
             <!-- Passe o mouse numa categoria para ver as opções -->
@@ -56,18 +55,29 @@
         <!-- Seção 3: confirmação de compra (só aparece depois de calcular) -->
         <section class="card" id="secao-confirmacao" style="display:none;">
             <h2>3. Vai levar o produto? Receba um lembrete</h2>
-            <p style="font-size:0.9rem; color:#555;">Só peça o lembrete se for mesmo levar o produto — assim avisamos na hora certa.</p>
+            <p class="texto-apoio">Só peça o lembrete se for mesmo levar o produto — assim avisamos na hora certa. Se comprar de novo, o lembrete anterior deste produto é substituído pelo novo.</p>
             <form id="form-pedido">
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" required placeholder="Digite seu nome">
-
                 <label for="whatsapp">Telefone / WhatsApp (com DDD):</label>
                 <input type="tel" id="whatsapp" required inputmode="numeric" maxlength="15" autocomplete="tel" placeholder="(61) 90000-0000">
+                <p id="aviso-cliente" class="aviso-cliente" aria-live="polite"></p>
+
+                <!-- Só aparece para quem ainda não é cliente cadastrado -->
+                <div id="bloco-nome">
+                    <label for="nome">Nome:</label>
+                    <input type="text" id="nome" placeholder="Digite seu nome" autocomplete="name">
+
+                    <div class="lgpd-box">
+                        <input type="checkbox" id="recorrente">
+                        <label for="recorrente" class="label-inline">
+                            Quero ser cliente recorrente: guardar meu nome e telefone para as próximas compras (não preciso digitar de novo).
+                        </label>
+                    </div>
+                </div>
 
                 <div class="lgpd-box">
-                    <input type="checkbox" id="lgpd" required>
+                    <input type="checkbox" id="lgpd">
                     <label for="lgpd" class="label-inline">
-                        Autorizo a coleta dos dados acima para recebimento de lembrete automático de reposição do produto via WhatsApp (LGPD).
+                        Autorizo o uso dos meus dados (nome e telefone) para receber o lembrete automático de reposição do produto via WhatsApp (LGPD).
                     </label>
                 </div>
 

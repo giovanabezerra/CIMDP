@@ -15,7 +15,10 @@ const ROTULOS = {
   medio: "Médio", grande: "Grande",
 };
 
-let estado = { produtos: [], produto: null, campos: null, idCalculo: null, resumo: "" };
+let estado = {
+  produtos: [], produto: null, campos: null, idCalculo: null, resumo: "",
+  clienteCadastrado: false, telefoneVerificado: "",
+};
 
 const $ = (id) => document.getElementById(id);
 const rotulo = (v) => ROTULOS[v] || v.charAt(0).toUpperCase() + v.slice(1);
@@ -157,31 +160,63 @@ function renderizarCampos(c) {
   if (c.pedeQuantidade) {
     const sugestao = estado.produto && estado.produto.peso_embalagem ? estado.produto.peso_embalagem : "";
     const modoInicial = sugestao ? "quantidade" : "dias";
-    html += `<label for="campo-modo-duracao">Como prefere informar?</label>
-             <select id="campo-modo-duracao">
-               <option value="dias" ${modoInicial === "dias" ? "selected" : ""}>Por quantos dias quero que dure</option>
-               <option value="quantidade" ${modoInicial === "quantidade" ? "selected" : ""}>Pela quantidade que vou levar (kg)</option>
-             </select>
-             <div id="bloco-dias" style="display:${modoInicial === "dias" ? "block" : "none"};">
-               <label for="campo-dias">Quantos dias?</label>
-               <input type="number" id="campo-dias" min="1" max="365" step="1" placeholder="Ex: 30">
-             </div>
+    const adubo = estado.produto && estado.produto.tipo === "adubo";
+    const coisa = adubo ? "adubo" : "ração";
+    const T = adubo
+      ? {
+          qtdTitulo: "Já sei quantos kg de adubo vou levar",
+          qtdAjuda: "Você diz os kg e eu digo por quantos dias rende.",
+          diasTitulo: "Quero adubar por um tempo",
+          diasAjuda: "Você diz os dias e eu digo quantos kg levar.",
+          qtdCampo: "Quantos kg de adubo vai levar?",
+          diasCampo: "Por quantos dias quer adubar?",
+          nota: "O adubo é aplicado 1 vez por mês, sobre a área do canteiro informada acima.",
+        }
+      : {
+          qtdTitulo: `Já sei quantos kg de ${coisa} vou levar`,
+          qtdAjuda: "Você diz os kg e eu digo quantos dias dura.",
+          diasTitulo: `Quero que a ${coisa} dure um tempo`,
+          diasAjuda: "Você diz os dias e eu digo quantos kg levar.",
+          qtdCampo: `Quantos kg de ${coisa} vai levar?`,
+          diasCampo: `Por quantos dias quer que a ${coisa} dure?`,
+          nota: "Com isso avisamos você pelo WhatsApp um pouco antes de acabar.",
+        };
+    html += `<fieldset class="grupo-modo">
+               <legend>Como quer informar?</legend>
+               <label class="opcao-modo">
+                 <input type="radio" name="modo-duracao" value="quantidade" ${modoInicial === "quantidade" ? "checked" : ""}>
+                 <span><strong>${T.qtdTitulo}</strong><small>${T.qtdAjuda}</small></span>
+               </label>
+               <label class="opcao-modo">
+                 <input type="radio" name="modo-duracao" value="dias" ${modoInicial === "dias" ? "checked" : ""}>
+                 <span><strong>${T.diasTitulo}</strong><small>${T.diasAjuda}</small></span>
+               </label>
+             </fieldset>
              <div id="bloco-quantidade" style="display:${modoInicial === "quantidade" ? "block" : "none"};">
-               <label for="campo-quantidade">Quantidade que vai levar (kg):</label>
+               <label for="campo-quantidade">${T.qtdCampo}</label>
                <input type="number" id="campo-quantidade" min="0" step="any" value="${esc(sugestao)}" placeholder="Ex: 15">
              </div>
-             <p class="resultado-detalhe" style="margin-top:4px;">Com isso calculamos quanto levar (ou em quantos dias acaba) e avisamos você na hora certa.</p>`;
+             <div id="bloco-dias" style="display:${modoInicial === "dias" ? "block" : "none"};">
+               <label for="campo-dias">${T.diasCampo}</label>
+               <input type="number" id="campo-dias" min="1" max="365" step="1" placeholder="Ex: 30">
+             </div>
+             <p class="dica-campo">${T.nota}</p>`;
   }
 
   $("campos-dinamicos").innerHTML = html;
 
-  const modo = $("campo-modo-duracao");
-  if (modo) {
-    modo.addEventListener("change", () => {
-      $("bloco-dias").style.display = modo.value === "dias" ? "block" : "none";
-      $("bloco-quantidade").style.display = modo.value === "quantidade" ? "block" : "none";
+  document.querySelectorAll('input[name="modo-duracao"]').forEach((r) => {
+    r.addEventListener("change", () => {
+      const m = modoEscolhido();
+      $("bloco-dias").style.display = m === "dias" ? "block" : "none";
+      $("bloco-quantidade").style.display = m === "quantidade" ? "block" : "none";
     });
-  }
+  });
+}
+
+function modoEscolhido() {
+  const r = document.querySelector('input[name="modo-duracao"]:checked');
+  return r ? r.value : null;
 }
 
 function lerEntrada() {
@@ -214,13 +249,13 @@ function lerEntrada() {
     if (c.atividadeObrigatoria && !e.atividade) throw new Error("Selecione o nível de atividade.");
   }
 
-  const modo = $("campo-modo-duracao");
-  if (modo && modo.value === "dias") {
+  const modo = modoEscolhido();
+  if (modo === "dias") {
     const dias = Number($("campo-dias").value);
-    if ($("campo-dias").value === "" || !Number.isInteger(dias) || dias < 1) throw new Error("Informe por quantos dias quer que dure (número inteiro, 1 ou mais).");
+    if ($("campo-dias").value === "" || !Number.isInteger(dias) || dias < 1) throw new Error("Informe o número de dias (número inteiro, 1 ou mais).");
     if (dias > 365) throw new Error("Use no máximo 365 dias.");
     e.dias = dias;
-  } else if ($("campo-quantidade") && $("campo-quantidade").value !== "") {
+  } else if (modo === "quantidade" && $("campo-quantidade").value !== "") {
     const q = Number($("campo-quantidade").value);
     if (!(q > 0)) throw new Error("Informe a quantidade que vai levar, em kg.");
     e.quantidadeKg = q;
@@ -270,13 +305,14 @@ function mostrarResultado(res) {
     else if (q.minKg === null) texto = `no máximo ${fmt(q.maxKg)} kg`;
     else if (q.maxKg === null) texto = `pelo menos ${fmt(q.minKg)} kg`;
     else texto = `cerca de ${fmt(q.minKg)} kg`;
-    const extra = p.tipo === "adubo" ? " (considerando 1 aplicação por mês)" : "";
+    const extra = p.tipo === "adubo" ? " (1 aplicação por mês)" : "";
     html += `<div class="resultado-detalhe">Para <strong>${res.duracao} dias</strong> você vai precisar de <strong>${texto}</strong>${extra}.</div>`;
   } else if (res.duracao !== null && res.quantidadeKg) {
-    const extra = p.tipo === "adubo" ? " (considerando 1 aplicação por mês)" : res.doseMin !== res.doseMax ? " (pela média da faixa)" : "";
-    html += `<div class="resultado-detalhe">Essa quantidade (${fmt(res.quantidadeKg)} kg) dura cerca de <strong>${res.duracao} dias</strong>${extra}.</div>`;
+    const extra = p.tipo === "adubo" ? " (1 aplicação por mês)" : res.doseMin !== res.doseMax ? " (pela média da faixa)" : "";
+    const oque = p.tipo === "adubo" ? "de adubo" : p.tipo === "racao" ? "de ração" : "do produto";
+    html += `<div class="resultado-detalhe">Levando <strong>${fmt(res.quantidadeKg)} kg</strong> ${oque}, ele dura cerca de <strong>${res.duracao} dias</strong>${extra}.</div>`;
   } else if (p.tipo === "racao" || p.tipo === "adubo") {
-    html += `<div class="resultado-detalhe">Para receber o lembrete de reposição, informe por quantos dias quer que dure ou a quantidade que vai levar, e calcule novamente.</div>`;
+    html += `<div class="resultado-detalhe">Para receber o lembrete de reposição, escolha uma das duas opções (quantos kg vai levar ou por quantos dias quer que dure) e calcule de novo.</div>`;
   }
   if (res.observacao) html += `<div class="resultado-detalhe">${esc(res.observacao)}</div>`;
   if (res.alertas && res.alertas.length > 0) {
@@ -291,48 +327,119 @@ function mostrarResultado(res) {
 
   // A confirmação (nome + telefone) só aparece se existe o que lembrar:
   // o cálculo foi registrado E sabemos em quantos dias o produto acaba.
-  $("secao-confirmacao").style.display = res.id_calculo && res.duracao !== null ? "block" : "none";
+  const podeConfirmar = res.id_calculo && res.duracao !== null;
+  $("secao-confirmacao").style.display = podeConfirmar ? "block" : "none";
   $("retorno-confirmacao").innerHTML = "";
+  if (podeConfirmar) prepararConfirmacao();
 }
 
 // ---------- 4) Confirmar compra (só agora pedimos nome e telefone) ----------
+// O lembrete vai por WhatsApp: exige celular com DDD (11 dígitos, começando com 9 depois do DDD)
+function celularValido(tel) {
+  return tel.length === 11 && Number(tel.slice(0, 2)) >= 11 && tel[2] === "9";
+}
+
+const telefoneDigitos = () => $("whatsapp").value.replace(/\D/g, ""); // telefone é a chave do cliente
+
+// Guardado só neste aparelho, só para quem é cliente recorrente (conveniência)
+function lembrarTelefone(tel) {
+  try { localStorage.setItem("cimdp_telefone", tel); } catch (e) { /* sem armazenamento: tudo bem */ }
+}
+function telefoneLembrado() {
+  try { return localStorage.getItem("cimdp_telefone") || ""; } catch (e) { return ""; }
+}
+
+// Mostra ou esconde o campo "Nome" conforme o cliente já estar cadastrado
+function atualizarBlocoCliente() {
+  $("bloco-nome").style.display = estado.clienteCadastrado ? "none" : "block";
+  $("aviso-cliente").textContent = estado.clienteCadastrado
+    ? "✓ Você já é cliente cadastrado — não precisa digitar o nome."
+    : "";
+}
+
+async function verificarTelefone() {
+  const tel = telefoneDigitos();
+  if (!celularValido(tel)) {
+    estado.telefoneVerificado = "";
+    estado.clienteCadastrado = false;
+    atualizarBlocoCliente();
+    return;
+  }
+  if (estado.telefoneVerificado === tel) return;
+  $("aviso-cliente").textContent = "Verificando...";
+  try {
+    const r = await Api.identificarCliente(tel);
+    if (telefoneDigitos() !== tel) return; // a pessoa já mudou o número: ignora esta resposta
+    estado.telefoneVerificado = tel;
+    estado.clienteCadastrado = !!(r && r.encontrado);
+  } catch (e) {
+    // Sem a verificação o cliente apenas digita o nome: não é um erro para mostrar
+    estado.telefoneVerificado = "";
+    estado.clienteCadastrado = false;
+  }
+  atualizarBlocoCliente();
+}
+
+// Prepara o formulário de confirmação a cada novo cálculo
+function prepararConfirmacao() {
+  $("form-pedido").style.display = "block";
+  $("btn-confirmar").disabled = false;
+  $("lgpd").checked = false;
+  $("recorrente").checked = false;
+  estado.telefoneVerificado = "";
+  estado.clienteCadastrado = false;
+  if (!$("whatsapp").value) {
+    const salvo = telefoneLembrado();
+    if (salvo) $("whatsapp").value = mascararTelefone(salvo);
+  }
+  atualizarBlocoCliente();
+  verificarTelefone();
+}
+
 async function confirmar(evento) {
   evento.preventDefault();
   const retorno = $("retorno-confirmacao");
+  const erro = (m) => { retorno.innerHTML = `<div class="mensagem-erro">${esc(m)}</div>`; };
 
-  const nome = $("nome").value.trim();
-  const telefone = $("whatsapp").value.replace(/\D/g, ""); // só dígitos: telefone é a chave do cliente
-  if (!nome) { retorno.innerHTML = '<div class="mensagem-erro">Informe seu nome.</div>'; return; }
-  // O lembrete vai por WhatsApp: exige celular com DDD (11 dígitos, começando com 9 depois do DDD)
-  if (telefone.length !== 11 || Number(telefone.slice(0, 2)) < 11 || telefone[2] !== "9") {
-    retorno.innerHTML = '<div class="mensagem-erro">Informe o celular com DDD, no formato (61) 90000-0000.</div>';
-    return;
-  }
-  if (!$("lgpd").checked) {
-    retorno.innerHTML = '<div class="mensagem-erro">É necessário aceitar o consentimento (LGPD).</div>';
-    return;
-  }
+  const telefone = telefoneDigitos();
+  if (!celularValido(telefone)) return erro("Informe o celular com DDD, no formato (61) 90000-0000.");
+
+  const jaCadastrado = estado.clienteCadastrado && estado.telefoneVerificado === telefone;
+  const nome = jaCadastrado ? "" : $("nome").value.trim();
+  if (!jaCadastrado && nome.length < 2) return erro("Informe seu nome.");
+  if (!$("lgpd").checked) return erro("É necessário aceitar o consentimento (LGPD).");
+
+  const virarRecorrente = !jaCadastrado && $("recorrente").checked;
 
   const btn = $("btn-confirmar");
   btn.disabled = true;
   try {
-    await Api.confirmarCompra(estado.idCalculo, nome, telefone);
+    if (virarRecorrente) await Api.cadastrarClienteRecorrente(nome, telefone);
+    await Api.confirmarCompra(estado.idCalculo, nome || null, telefone);
+    if (virarRecorrente || jaCadastrado) lembrarTelefone(telefone);
 
-    let html = `<div class="mensagem-sucesso">Compra confirmada! Você receberá um lembrete quando o produto estiver acabando.</div>`;
+    let html = `<div class="mensagem-sucesso">Compra confirmada! Você receberá um lembrete quando o produto estiver acabando.` +
+      (virarRecorrente ? " Seus dados ficaram guardados: nas próximas compras é só digitar o telefone." : "") +
+      `</div>`;
 
     // Botão opcional: o cliente manda o resumo para o WhatsApp da loja.
     // Fica desligado por padrão (veja MOSTRAR_BOTAO_WHATSAPP_LOJA no config.js).
     if (typeof MOSTRAR_BOTAO_WHATSAPP_LOJA !== "undefined" && MOSTRAR_BOTAO_WHATSAPP_LOJA) {
       const texto = encodeURIComponent(
-        `*CIMDP - Compra confirmada*\nCliente: ${nome}\nContato: ${$("whatsapp").value}\nResumo: ${estado.resumo}`
+        `*CIMDP - Compra confirmada*\nCliente: ${nome || "cliente cadastrado"}\nContato: ${$("whatsapp").value}\nResumo: ${estado.resumo}`
       );
       html += `<a href="https://wa.me/${NUMERO_LOJA_WHATSAPP}?text=${texto}" target="_blank" rel="noopener">
         <button type="button" class="btn-whatsapp">Enviar resumo para a loja pelo WhatsApp</button>
       </a>`;
     }
 
+    html += `<button type="button" id="btn-outra-compra">Fazer outra compra</button>`;
     retorno.innerHTML = html;
     $("form-pedido").style.display = "none";
+    $("btn-outra-compra").addEventListener("click", () => {
+      limparResultado();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   } catch (e) {
     retorno.innerHTML = `<div class="mensagem-erro">${esc(e.message)}</div>`;
     btn.disabled = false;
@@ -343,6 +450,9 @@ document.addEventListener("DOMContentLoaded", () => {
   $("produto").addEventListener("change", aoMudarProduto);
   $("btn-calcular").addEventListener("click", calcular);
   $("form-pedido").addEventListener("submit", confirmar);
-  $("whatsapp").addEventListener("input", (e) => { e.target.value = mascararTelefone(e.target.value); });
+  $("whatsapp").addEventListener("input", (e) => {
+    e.target.value = mascararTelefone(e.target.value);
+    verificarTelefone();
+  });
   carregarMenu();
 });
