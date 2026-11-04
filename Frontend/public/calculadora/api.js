@@ -169,6 +169,31 @@ const Api = (() => {
     if (error) throw new Error("Não foi possível alterar o status da regra.");
   }
 
+  // Clientes cadastrados + resumo das compras confirmadas (só o admin logado enxerga: RLS).
+  async function listarClientes() {
+    let { data: clientes, error } = await db.from("cliente")
+      .select("id_cliente, nome, telefone, recorrente, consentimento_lgpd_em").order("nome");
+    // Sem as colunas novas (SQL schema_clientes_lembretes.sql ainda não rodou): lista o básico
+    if (error) ({ data: clientes, error } = await db.from("cliente").select("id_cliente, nome, telefone").order("nome"));
+    if (error) throw new Error("Não foi possível carregar os clientes.");
+
+    const { data: compras } = await db.from("calculo")
+      .select("id_cliente, id_produto, data_confirmacao_compra")
+      .not("id_cliente", "is", null).not("data_confirmacao_compra", "is", null)
+      .order("data_confirmacao_compra", { ascending: false });
+
+    const porCliente = {};
+    (compras || []).forEach((c) => {
+      const r = (porCliente[c.id_cliente] = porCliente[c.id_cliente] || { total: 0, ultima: c });
+      r.total += 1; // já vem da mais recente para a mais antiga
+    });
+    return (clientes || []).map((c) => ({
+      ...c,
+      totalCompras: porCliente[c.id_cliente] ? porCliente[c.id_cliente].total : 0,
+      ultimaCompra: porCliente[c.id_cliente] ? porCliente[c.id_cliente].ultima : null,
+    }));
+  }
+
   async function listarRegrasGenericas() {
     let { data, error } = await db.from("regra_generica").select("id_regra, especie, tipo, status").order("especie");
     if (error) ({ data, error } = await db.from("regra_generica").select("id_regra, especie, tipo").order("especie"));
@@ -233,7 +258,7 @@ const Api = (() => {
     listarMenu, listarProdutos, obterFormulario, calcular, confirmarCompra,
     identificarCliente, cadastrarClienteRecorrente,
     listarEspecies, salvarEspecie,
-    entrar, sair, sessaoAtual, listarProdutosAdmin, listarRegrasGenericas,
+    entrar, sair, sessaoAtual, listarProdutosAdmin, listarRegrasGenericas, listarClientes,
     salvarProduto, definirAtivoProduto, resumo,
     definirStatusTabelaProduto, definirStatusRegraGenerica,
   };

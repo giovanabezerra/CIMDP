@@ -47,6 +47,7 @@ async function mostrarPainel() {
     await carregarEspecies();
     await Promise.all([carregarProdutos(), carregarResumo()]);
     renderizarRegrasGenericas();
+    await carregarClientes();
   } catch (e) {
     aviso("retorno-produto", e.message, "erro");
   }
@@ -126,7 +127,7 @@ async function carregarProdutos() {
     const regra = p.temTabela ? "Tabela do fabricante" : p.id_regra ? "Fórmula genérica" : "Sem regra";
     const validacao = p.temTabela
       ? (p.statusTabela === "MISTO"
-          ? `<select data-validacao="${p.id_produto}"><option value="">Misto — escolha para padronizar</option>${opcoesStatus("")}</select>`
+          ? `<select data-validacao="${p.id_produto}"><option value="">Misto: escolha para padronizar</option>${opcoesStatus("")}</select>`
           : `<select data-validacao="${p.id_produto}">${opcoesStatus(p.statusTabela)}</select>`)
       : "-";
     const tr = document.createElement("tr");
@@ -145,6 +146,46 @@ async function carregarProdutos() {
       </td>`;
     corpo.appendChild(tr);
   });
+}
+
+// ---------- Clientes ----------
+let clientes = [];
+
+function formatarTelefone(t) {
+  const d = String(t || "").replace(/\D/g, "");
+  return d.length === 11 ? `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}` : d || "-";
+}
+
+function formatarData(iso) {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  return isNaN(d) ? "-" : d.toLocaleDateString("pt-BR");
+}
+
+async function carregarClientes() {
+  try { clientes = await Api.listarClientes(); } catch (e) { clientes = []; aviso("retorno-produto", e.message, "erro"); }
+  renderizarClientes();
+}
+
+function renderizarClientes() {
+  const termo = $("busca-cliente").value.trim().toLowerCase();
+  const soDigitos = termo.replace(/\D/g, "");
+  const lista = clientes.filter((c) =>
+    !termo || String(c.nome || "").toLowerCase().includes(termo) || (soDigitos && String(c.telefone || "").includes(soDigitos)));
+
+  $("tabela-clientes").innerHTML = lista.map((c) => {
+    const ult = c.ultimaCompra;
+    const prod = ult ? produtos.find((p) => p.id_produto === ult.id_produto) : null;
+    return `<tr>
+      <td><strong>${esc(c.nome)}</strong></td>
+      <td>${esc(formatarTelefone(c.telefone))}</td>
+      <td>${c.recorrente === undefined ? "-" : c.recorrente ? "Sim" : "Não"}</td>
+      <td>${esc(formatarData(c.consentimento_lgpd_em))}</td>
+      <td>${c.totalCompras}</td>
+      <td>${ult ? esc(formatarData(ult.data_confirmacao_compra)) + (prod ? `<br><small>${esc(prod.nome)}</small>` : "") : "-"}</td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="6">Nenhum cliente encontrado.</td></tr>`;
+  $("total-clientes").textContent = `${lista.length} de ${clientes.length} cliente(s).`;
 }
 
 function renderizarRegrasGenericas() {
@@ -265,7 +306,7 @@ async function aoMudarStatus(evento) {
       const p = produtos.find((x) => x.id_produto === Number(sel.dataset.validacao));
       const nome = STATUS_REGRA[sel.value];
       if (!confirm(`Marcar TODAS as faixas da tabela de "${p.nome}" como "${nome}"?` +
-          (status_usa_no_calculo(sel.value) ? "\nElas passam a valer no cálculo — confira antes na embalagem." : "\nElas deixam de valer no cálculo."))) {
+          (status_usa_no_calculo(sel.value) ? "\nElas passam a valer no cálculo. Confira antes na embalagem." : "\nElas deixam de valer no cálculo."))) {
         await carregarProdutos(); return;
       }
       await Api.definirStatusTabelaProduto(p.id_produto, sel.value);
@@ -305,6 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("btn-cancelar").addEventListener("click", limparFormulario);
   $("tabela-corpo").addEventListener("click", aoClicarTabela);
   $("tabela-corpo").addEventListener("change", aoMudarStatus);
+  $("busca-cliente").addEventListener("input", renderizarClientes);
   $("tabela-regras").addEventListener("change", aoMudarStatus);
   $("btn-csv").addEventListener("click", exportarCSV);
   $("especie-produto").addEventListener("change", alternarNovaEspecie);

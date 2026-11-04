@@ -134,6 +134,20 @@
             </section>
 
             <section class="card">
+                <h2>Clientes cadastrados</h2>
+                <p class="texto-apoio">Quem confirmou uma compra na calculadora. Os dados são protegidos: só você, logado, vê esta lista.</p>
+                <label for="busca-cliente">Buscar por nome ou telefone:</label>
+                <input type="search" id="busca-cliente" placeholder="Ex: Ana ou 61 9">
+                <div class="tabela-wrapper">
+                    <table class="tabela-admin">
+                        <thead><tr><th>Nome</th><th>Telefone</th><th>Cliente recorrente</th><th>Autorização (LGPD)</th><th>Compras</th><th>Última compra</th></tr></thead>
+                        <tbody id="tabela-clientes"></tbody>
+                    </table>
+                </div>
+                <p id="total-clientes" class="dica-campo"></p>
+            </section>
+
+            <section class="card">
                 <h2>Regras genéricas (fórmulas) e validação</h2>
                 <p class="texto-apoio">Só regras <strong>Validada</strong> ou <strong>Ativa</strong> entram no cálculo. Regras pendentes, em rascunho ou inativas ficam de fora.</p>
                 <div class="tabela-wrapper">
