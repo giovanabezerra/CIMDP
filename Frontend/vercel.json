@@ -1,0 +1,8 @@
+{
+  "routes": [
+    { "src": "^/$", "dest": "/inicio/index.html" },
+    { "src": "^/calc/?$", "dest": "/calculadora/index.html" },
+    { "src": "^/admin/?$", "dest": "/calculadora/admin.html" },
+    { "handle": "filesystem" }
+  ]
+}
