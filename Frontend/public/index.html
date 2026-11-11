@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIMDP - Calculadora Inteligente de Manejo e Dosagem Preditiva</title>
+<meta name="description" content="Calcule a dosagem certa de ração, medicamentos e adubo, saiba quanto tempo o pacote dura e receba um lembrete no WhatsApp na hora de repor.">
+<style>
+:root{--verde:#16a34a;--branco:#ffffff;--suave:rgba(22,163,74,.25);--texto:#334155}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:var(--texto);background:var(--branco);line-height:1.55}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+header.hero{background:linear-gradient(rgba(22,163,74,.82),rgba(22,163,74,.82)),url(/img/capa.webp) center/cover,var(--verde);color:var(--branco);padding:64px 0 72px;text-align:center}
+.hero h1{font-size:clamp(2.2rem,6vw,3.4rem);letter-spacing:2px}
+.hero .sub{font-size:clamp(1rem,2.5vw,1.25rem);margin-top:6px;opacity:.95}
+.hero p.lead{max-width:640px;margin:22px auto 0;font-size:1.05rem}
+.acoes{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:32px}
+.btn{display:inline-block;padding:14px 28px;border-radius:10px;font-weight:700;text-decoration:none;font-size:1rem;border:2px solid var(--branco);transition:filter .2s,transform .1s}
+.btn:hover{filter:brightness(.93)}
+.btn:active{transform:scale(.98)}
+.btn:focus-visible{outline:3px solid var(--suave);outline-offset:2px}
+.btn-cheio{background:var(--branco);color:var(--verde)}
+.btn-vazio{background:transparent;color:var(--branco)}
+section{padding:56px 0}
+h2{font-size:1.5rem;margin-bottom:8px;padding-bottom:8px;border-bottom:2px solid var(--verde);display:inline-block}
+.intro{margin-top:14px;max-width:760px}
+.grade{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:26px}
+.cartao{border:1px solid var(--suave);border-radius:12px;padding:20px}
+.cartao h3{font-size:1.05rem;margin-bottom:6px}
+.num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:var(--verde);color:var(--branco);font-weight:700;margin-bottom:10px}
+.faixa{background:var(--suave)}
+.dois{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+ul.lista{list-style:none;margin-top:14px}
+ul.lista li{padding:8px 0 8px 26px;position:relative;border-bottom:1px solid var(--suave)}
+ul.lista li::before{content:"";position:absolute;left:4px;top:15px;width:9px;height:9px;border-radius:50%;background:var(--verde)}
+.acesso{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:26px}
+.acesso .cartao{display:flex;flex-direction:column;gap:10px}
+.acesso .btn{margin-top:auto;align-self:flex-start;border-color:var(--verde);background:var(--verde);color:var(--branco)}
+footer{border-top:1px solid var(--suave);padding:24px 0;text-align:center;font-size:.88rem}
+figure.foto{border-radius:12px;overflow:hidden;border:1px solid var(--suave)}
+figure.foto img{display:block;width:100%;height:220px;object-fit:cover}
+figure.foto figcaption{padding:8px 12px;font-size:.85rem}
+@media(max-width:800px){
+ figure.foto img{height:180px}
+ header.hero{padding:44px 0 52px}
+ .grade,.dois,.acesso{grid-template-columns:1fr}
+ section{padding:40px 0}
+ .btn{width:100%;text-align:center}
+ .acesso .btn{align-self:stretch}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+ <div class="wrap">
+  <h1>CIMDP</h1>
+  <p class="sub">Calculadora Inteligente de Manejo e Dosagem Preditiva</p>
+  <p class="lead">Descubra a dose certa de ração, medicamento ou adubo, quanto tempo o pacote vai durar e receba um aviso no WhatsApp na hora de repor.</p>
+  <div class="acoes">
+   <a class="btn btn-cheio" href="/calculadora/">Abrir a calculadora</a>
+   <a class="btn btn-vazio" href="#projeto">Conhecer o projeto</a>
+  </div>
+ </div>
+</header>
+
+<section id="projeto">
+ <div class="wrap">
+  <h2>O problema</h2>
+  <p class="intro">Na agropecuária Rambina, a orientação sobre quanto usar de cada produto depende do conhecimento informal dos funcionários ou da leitura da embalagem. Isso gera insegurança, desperdício de dinheiro e risco para a saúde dos animais e para o desenvolvimento das plantações.</p>
+ </div>
+</section>
+
+<section class="faixa">
+ <div class="wrap">
+  <h2>Como funciona</h2>
+  <div class="grade">
+   <div class="cartao" style="background:#fff">
+    <div class="num">1</div>
+    <h3>Escaneie o QR Code</h3>
+    <p>O código fica no balcão da loja. Abre direto no celular, sem instalar aplicativo.</p>
+   </div>
+   <div class="cartao" style="background:#fff">
+    <div class="num">2</div>
+    <h3>Informe os dados</h3>
+    <p>Escolha o produto e informe peso, espécie e fase do animal, ou o tamanho do canteiro.</p>
+   </div>
+   <div class="cartao" style="background:#fff">
+    <div class="num">3</div>
+    <h3>Receba o resultado</h3>
+    <p>Veja a dose correta e por quantos dias o pacote deve durar. Se levar o produto, registre a compra e receba o lembrete.</p>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section>
+ <div class="wrap dois">
+  <div>
+   <h2>O que o sistema faz</h2>
+   <ul class="lista">
+    <li>Calcula a dosagem de ração, medicamentos de balcão, suplementos e adubo.</li>
+    <li>Estima a duração do pacote com base na dose calculada.</li>
+    <li>Guarda o histórico de compras de cada cliente.</li>
+    <li>Envia lembrete de reposição pelo WhatsApp quando o produto está perto de acabar.</li>
+    <li>Permite que a loja cadastre produtos e suas regras de dosagem.</li>
+   </ul>
+  </div>
+  <div>
+   <h2>Para quem é</h2>
+   <ul class="lista">
+    <li><strong>Cliente:</strong> usa de graça, no celular, sem baixar nada.</li>
+    <li><strong>Loja:</strong> atende com mais segurança e vende de novo na hora certa.</li>
+    <li><strong>Animais e plantações:</strong> recebem a quantidade adequada, sem falta nem excesso.</li>
+   </ul>
+  </div>
+ </div>
+</section>
+
+<section id="galeria" style="padding-top:0">
+ <div class="wrap">
+  <div class="grade">
+   <figure class="foto"><img src="/img/bovinos.webp" alt="Gado no pasto" loading="lazy" onerror="this.closest('figure').remove()"><figcaption>Ração e suplementação</figcaption></figure>
+   <figure class="foto"><img src="/img/cavalo.webp" alt="Cavalo no campo" loading="lazy" onerror="this.closest('figure').remove()"><figcaption>Medicamentos de balcão</figcaption></figure>
+   <figure class="foto"><img src="/img/horta.webp" alt="Pequena plantação" loading="lazy" onerror="this.closest('figure').remove()"><figcaption>Adubo e manejo</figcaption></figure>
+  </div>
+ </div>
+</section>
+
+<section class="faixa" id="acessos">
+ <div class="wrap">
+  <h2>Acessar o sistema</h2>
+  <div class="acesso">
+   <div class="cartao" style="background:#fff">
+    <h3>Calculadora</h3>
+    <p>Para o cliente calcular a dose e a duração do produto.</p>
+    <a class="btn" href="/calculadora/">Abrir calculadora</a>
+   </div>
+   <div class="cartao" style="background:#fff">
+    <h3>Painel administrativo</h3>
+    <p>Para a equipe da loja cadastrar produtos, regras, clientes e lembretes. Exige login.</p>
+    <a class="btn" href="/admin">Abrir painel</a>
+   </div>
+  </div>
+ </div>
+</section>
+
+<footer>
+ <div class="wrap">Projeto Integrador II, UniCEUB. Desenvolvido para a agropecuária Rambina.</div>
+</footer>
+
+</body>
+</html>
