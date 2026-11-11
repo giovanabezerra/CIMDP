@@ -42,7 +42,8 @@ body {
    Computador: ocupa a tela toda, com a calculadora à esquerda e o resultado à direita. */
 .container {
     width: 100%;
-    max-width: 1800px;
+    max-width: 1100px;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -76,7 +77,7 @@ body {
 
 .header {
     text-align: center;
-    background: linear-gradient(rgba(22,163,74,.82), rgba(22,163,74,.82)), url(/img/capa.webp) center / cover, var(--verde);
+    background: linear-gradient(rgba(22,163,74,.72), rgba(22,163,74,.72)), url(/img/capa.webp) center / cover, var(--verde);
     color: var(--branco);
     padding: 25px 20px;
     border-radius: 12px;
@@ -281,7 +282,7 @@ button:disabled {
    ========================================== */
 
 .container-admin {
-    max-width: 1800px;
+    max-width: 1200px;
 }
 
 .nav-admin {
