@@ -194,6 +194,20 @@ const Api = (() => {
     }));
   }
 
+  // Lembretes que já venceram (view lembretes_pendentes: última compra de cada cliente+produto).
+  async function listarLembretesDevidos() {
+    const hoje = new Date().toLocaleDateString("en-CA"); // aaaa-mm-dd no fuso do aparelho
+    const { data, error } = await db.from("lembretes_pendentes").select("*")
+      .lte("data_lembrete", hoje).order("data_lembrete");
+    if (error) throw new Error("Não foi possível carregar os lembretes.");
+    return data || [];
+  }
+
+  async function marcarLembreteEnviado(idCalculo) {
+    const { error } = await db.from("calculo").update({ lembrete_enviado: true }).eq("id_calculo", idCalculo);
+    if (error) throw new Error("Não foi possível marcar como enviado. Rode o SQL schema_whatsapp.sql no Supabase.");
+  }
+
   async function listarRegrasGenericas() {
     let { data, error } = await db.from("regra_generica").select("id_regra, especie, tipo, status").order("especie");
     if (error) ({ data, error } = await db.from("regra_generica").select("id_regra, especie, tipo").order("especie"));
@@ -258,7 +272,7 @@ const Api = (() => {
     listarMenu, listarProdutos, obterFormulario, calcular, confirmarCompra,
     identificarCliente, cadastrarClienteRecorrente,
     listarEspecies, salvarEspecie,
-    entrar, sair, sessaoAtual, listarProdutosAdmin, listarRegrasGenericas, listarClientes,
+    entrar, sair, sessaoAtual, listarProdutosAdmin, listarRegrasGenericas, listarClientes, listarLembretesDevidos, marcarLembreteEnviado,
     salvarProduto, definirAtivoProduto, resumo,
     definirStatusTabelaProduto, definirStatusRegraGenerica,
   };

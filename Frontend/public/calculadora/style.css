@@ -33,7 +33,7 @@ body {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--branco);
     color: var(--texto);
-    padding: 20px 15px;
+    padding: 20px clamp(12px, 3vw, 56px);
     display: flex;
     justify-content: center;
 }
@@ -42,14 +42,14 @@ body {
    Computador: ocupa a tela toda, com a calculadora à esquerda e o resultado à direita. */
 .container {
     width: 100%;
-    max-width: 1400px;
+    max-width: 1800px;
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
 @media (min-width: 900px) {
-    body { padding: 28px 40px; }
+    body { padding: 28px clamp(24px, 3vw, 56px); }
     .container:not(.container-admin) {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -68,7 +68,7 @@ body {
 }
 
 @media (max-width: 600px) {
-    body { padding: 12px 10px; }
+    body { padding: 12px 12px; }
     .header { padding: 18px 14px; }
     .header h1 { font-size: 1.5rem; }
     .card { padding: 16px; }
@@ -76,7 +76,7 @@ body {
 
 .header {
     text-align: center;
-    background: var(--verde);
+    background: linear-gradient(rgba(22,163,74,.82), rgba(22,163,74,.82)), url(/img/capa.webp) center / cover, var(--verde);
     color: var(--branco);
     padding: 25px 20px;
     border-radius: 12px;
@@ -281,7 +281,7 @@ button:disabled {
    ========================================== */
 
 .container-admin {
-    max-width: 1400px;
+    max-width: 1800px;
 }
 
 .nav-admin {

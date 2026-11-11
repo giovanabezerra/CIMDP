@@ -48,6 +48,7 @@ async function mostrarPainel() {
     await Promise.all([carregarProdutos(), carregarResumo()]);
     renderizarRegrasGenericas();
     await carregarClientes();
+    await carregarLembretes();
   } catch (e) {
     aviso("retorno-produto", e.message, "erro");
   }
@@ -148,6 +149,50 @@ async function carregarProdutos() {
   });
 }
 
+// ---------- Lembretes (envio manual pelo WhatsApp) ----------
+let lembretes = [];
+
+function mensagemLembrete(l) {
+  const nome = String(l.cliente || "").trim().split(/\s+/)[0] || "";
+  const fim = formatarData(l.data_prevista_fim);
+  return `Olá${nome ? ", " + nome : ""}! Aqui é da Agropecuária Rambina. ` +
+    `Passando para lembrar que o produto ${l.produto} deve acabar por volta de ${fim}. ` +
+    `Que tal repor? Estamos à disposição.`;
+}
+
+async function carregarLembretes() {
+  const corpo = $("tabela-lembretes");
+  if (!corpo) return;
+  try { lembretes = await Api.listarLembretesDevidos(); }
+  catch (e) { lembretes = []; aviso("retorno-produto", "Lembretes: " + e.message, "erro"); }
+  corpo.innerHTML = lembretes.map((l) => {
+    const tel = String(l.telefone || "").replace(/\D/g, "");
+    const link = `https://wa.me/55${tel}?text=${encodeURIComponent(mensagemLembrete(l))}`;
+    return `<tr>
+      <td><strong>${esc(l.cliente)}</strong><br><small>${esc(formatarTelefone(l.telefone))}</small></td>
+      <td>${esc(l.produto)}</td>
+      <td>${esc(formatarData(l.data_prevista_fim))}</td>
+      <td>
+        <a class="btn-link" href="${link}" target="_blank" rel="noopener">Abrir WhatsApp</a><br>
+        <button type="button" class="btn-acao btn-secundario" data-enviado="${l.id_calculo}">Marcar como enviado</button>
+      </td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="4">Nenhum lembrete para enviar hoje.</td></tr>`;
+}
+
+async function aoClicarLembrete(evento) {
+  const b = evento.target.closest("[data-enviado]");
+  if (!b) return;
+  b.disabled = true;
+  try {
+    await Api.marcarLembreteEnviado(Number(b.dataset.enviado));
+    await carregarLembretes();
+  } catch (e) {
+    aviso("retorno-produto", e.message, "erro");
+    b.disabled = false;
+  }
+}
+
 // ---------- Clientes ----------
 let clientes = [];
 
@@ -163,11 +208,12 @@ function formatarData(iso) {
 }
 
 async function carregarClientes() {
-  try { clientes = await Api.listarClientes(); } catch (e) { clientes = []; aviso("retorno-produto", e.message, "erro"); }
+  try { clientes = await Api.listarClientes(); } catch (e) { clientes = []; aviso("retorno-produto", "Clientes: " + e.message, "erro"); }
   renderizarClientes();
 }
 
 function renderizarClientes() {
+  if (!$("tabela-clientes") || !$("busca-cliente")) return;
   const termo = $("busca-cliente").value.trim().toLowerCase();
   const soDigitos = termo.replace(/\D/g, "");
   const lista = clientes.filter((c) =>
@@ -190,6 +236,7 @@ function renderizarClientes() {
 
 function renderizarRegrasGenericas() {
   const corpo = $("tabela-regras");
+  if (!corpo) return;
   corpo.innerHTML = regrasGenericas.map((r) => `
     <tr>
       <td>${esc(nomeEspecie(r.especie))}</td>
